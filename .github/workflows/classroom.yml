@@ -13,18 +13,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    - name: E2c
-      id: e2c
-      uses: classroom-resources/autograding-io-grader@v1
-      with:
-        test-name: E2c
-        setup-command: make
-        command: "./run"
-        input: ''
-        expected-output: '1.38424'
-        comparison-method: contains
-        timeout: 10
-        max-score: 1000
     - name: E1d
       id: e1d
       uses: classroom-resources/autograding-io-grader@v1
@@ -61,12 +49,30 @@ jobs:
         comparison-method: contains
         timeout: 10
         max-score: 1000
+    - name: unit test
+      id: unit-test
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: unit test
+        setup-command: make
+        command: "./run"
+        input: ''
+        expected-output: |-
+          running tests...
+          testReadingSize... ok
+          testReadingMeasurement... ok
+          testReadingBinEdges... ok
+          testReadingErrors... ok
+          testCopyConstructor... ok
+        comparison-method: contains
+        timeout: 10
+        max-score: 1
     - name: Autograding Reporter
       uses: classroom-resources/autograding-grading-reporter@v1
       env:
-        E2C_RESULTS: "${{steps.e2c.outputs.result}}"
         E1D_RESULTS: "${{steps.e1d.outputs.result}}"
         E2B_2_RESULTS: "${{steps.e2b_2.outputs.result}}"
         E2C_1_RESULTS: "${{steps.e2c_1.outputs.result}}"
+        UNIT-TEST_RESULTS: "${{steps.unit-test.outputs.result}}"
       with:
-        runners: e2c,e1d,e2b_2,e2c_1
+        runners: e1d,e2b_2,e2c_1,unit-test

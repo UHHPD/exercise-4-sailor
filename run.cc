@@ -2,10 +2,12 @@
 #include <vector>
 #include <functional>
 #include <string>
+#include <fstream>
+#include <memory>
 
 #include "Data.hh"
 
-// generic function comparing two values of some type T used later for int and
+// Generic function comparing two values of some type T used later for int and
 // double
 template <class T>
 bool testEqual(const std::string& name, T expected, T real) {
@@ -51,11 +53,19 @@ bool testCopyConstructor() {
          testEqual("measurement", 10., c.measurement(0));
 }
 
+bool testCompatibilityFunction() {
+  std::cout << "testCompatibilityFunction...";
+  Data datA("testA");
+  Data datB("testB");
+  return testEqual("compatibility", 1, datA.checkCompatibility(datB, 1)) &&
+         testEqual("compatibility", 1, datB.checkCompatibility(datA, 1));
+}
+
 void runTests() {
   std::cout << "running tests...\n";
   std::vector<std::function<bool()> > tests(
       {testReadingSize, testReadingMeasurement, testReadingBinEdges,
-       testReadingErrors, testCopyConstructor});
+	  testReadingErrors, testCopyConstructor, testCompatibilityFunction});
   for (auto test : tests)
     std::cout << (test() ? " ok" : " FAILED!") << std::endl;
 }
@@ -66,14 +76,57 @@ int main() {
   cout << "******************************************************" << endl;
   runTests();
   cout << "******************************************************" << endl;
-  // create an object which holds data of experiment A
-  Data datA("exp_A");
+  // create object vector which holds data of experiments A, B, C and D
+  vector<Data> dat;
+  dat.push_back(Data("exp_A"));
+  dat.push_back(Data("exp_B"));
+  dat.push_back(Data("exp_C"));
+  dat.push_back(Data("exp_D"));
 
-  // here is the data from experiment A
-  cout << "bin 27: from " << datA.binLow(27) << " to " << datA.binHigh(27)
+  vector<string> letter = {"A", "B", "C", "D"};
+  vector<Data> w_sum;
+  vector<unique_ptr<ofstream>> fout;
+
+  cout << "Bin 27: from " << dat[0].binLow(27) << " to " << dat[0].binHigh(27)
        << endl;
-  cout << "measurement of experiment A in bin 27: " << datA.measurement(27)
-       << endl;
+  // loop over to read the data from the experiments
+  for (int i = 0; i < 4; ++i) {
+    cout << "Measurement of experiment " << letter[i] << " in bin 27: " << dat[i].measurement(27)
+         << endl;
+    for (int j = i + 1; j < 4; ++j) {
+      for (int n = 1; n < 4; ++n) {
+	cout << "Nr. of incompatible data between experiments " << letter[i] << " and " << letter[j] << " (" << n << " standard deviation(s)): " << dat[i].checkCompatibility(dat[j], n)
+	     << endl;
+      }
+
+      Data sum = dat[i] + dat[j];
+      w_sum.push_back(sum);
+      string filename = "avg_" + letter[i] + letter[j];
+      unique_ptr<ofstream> out(new ofstream(filename));
+      fout.push_back(move(out));
+    } 
+  }
+
+  for (int i = 0; i < 6; ++i) {
+    *fout[i] << w_sum[i].size() << endl;
+
+    for (int j = 0; j < w_sum[i].size() + 1; ++j) {
+      *fout[i] << w_sum[i].binLow(j) << "  ";
+    }
+    *fout[i] << endl;
+
+    for (int k = 0; k < w_sum[i].size(); ++k) {
+      double avg = w_sum[i].measurement(k);
+      *fout[i] << avg << "  ";
+    }
+    *fout[i] << endl;
+
+    for (int l = 0; l < w_sum[i].size(); ++l) {
+      double err = w_sum[i].error(l);
+      *fout[i] << err << "  ";
+    }
+    *fout[i] << endl;
+  }
 
   return 0;
 }

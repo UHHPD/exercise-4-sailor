@@ -62,7 +62,7 @@ bool testCompatibilityFunction() {
 }
 
 void runTests() {
-  std::cout << "running tests...\n";
+  std::cout << "Running tests...\n";
   std::vector<std::function<bool()> > tests(
       {testReadingSize, testReadingMeasurement, testReadingBinEdges,
 	  testReadingErrors, testCopyConstructor, testCompatibilityFunction});
@@ -76,7 +76,7 @@ int main() {
   cout << "******************************************************" << endl;
   runTests();
   cout << "******************************************************" << endl;
-  // create object vector which holds data of experiments A, B, C and D
+  // Create object vector which holds data of experiments A, B, C and D
   vector<Data> dat;
   dat.push_back(Data("exp_A"));
   dat.push_back(Data("exp_B"));
@@ -89,7 +89,7 @@ int main() {
 
   cout << "Bin 27: from " << dat[0].binLow(27) << " to " << dat[0].binHigh(27)
        << endl;
-  // loop over to read the data from the experiments
+  // Loop over to read the data from the experiments
   for (int i = 0; i < 4; ++i) {
     cout << "Measurement of experiment " << letter[i] << " in bin 27: " << dat[i].measurement(27)
          << endl;
@@ -99,6 +99,7 @@ int main() {
 	     << endl;
       }
 
+      // Create output files
       Data sum = dat[i] + dat[j];
       w_sum.push_back(sum);
       string filename = "avg_" + letter[i] + letter[j];
@@ -107,6 +108,7 @@ int main() {
     } 
   }
 
+  // Write to files
   for (int i = 0; i < 6; ++i) {
     *fout[i] << w_sum[i].size() << endl;
 

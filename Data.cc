@@ -50,6 +50,7 @@ void Data::assertSizes() { assert(m_data.size() + 1 == m_bins.size()); }
 int Data::checkCompatibility(const Data& in, int n) {
   int diff = 0;
 
+  // Count nr. of data points which exceed compatibility
   for (int i = 0; i < m_data.size(); ++i) {
     if (fabs(m_data[i] - in.measurement(i)) > n*sqrt(pow(m_err[i], 2.) + pow(in.error(i), 2.))) {
       diff++;
@@ -62,6 +63,7 @@ int Data::checkCompatibility(const Data& in, int n) {
 Data Data::operator+(const Data& rhs) const {
   Data dat = *this;
 
+  // Calculate weighted average and error
   for (unsigned int i = 0; i < dat.size(); ++i) {
     double avg;
     avg = ((1/pow(dat.error(i), 2.))*dat.measurement(i) + (1/pow(rhs.error(i), 2.))*rhs.measurement(i))/(1/pow(dat.error(i), 2.) + 1/pow(rhs.error(i), 2.));
